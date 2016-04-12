@@ -673,15 +673,35 @@ func (p *Parser) asmInstruction(op obj.As, cond string, a []obj.Addr) {
 			prog.To = a[3]
 			break
 		}
-		if p.arch.Family == sys.PPC64 && arch.IsPPC64RLD(op) {
-			// 2nd operand must always be a register.
-			// TODO: Do we need to guard this with the instruction type?
-			// That is, are there 4-operand instructions without this property?
-			prog.From = a[0]
-			prog.Reg = p.getRegister(prog, op, &a[1])
-			prog.From3 = newAddr(a[2])
-			prog.To = a[3]
-			break
+		if p.arch.Family == sys.PPC64 {
+			if arch.IsPPC64RLD(op) {
+				prog.From = a[0]
+				prog.Reg = p.getRegister(prog, op, &a[1])
+				prog.From3 = newAddr(a[2])
+				prog.To = a[3]
+				break
+			}
+			// Else, it is a VA-form instruction
+			// reg reg reg reg
+			// imm reg reg reg
+			// Or a VX-form instruction
+			// imm imm reg reg
+			if a[1].Type == obj.TYPE_REG {
+				prog.From = a[0]
+				prog.Reg = p.getRegister(prog, op, &a[1])
+				prog.From3 = newAddr(a[2])
+				prog.To = a[3]
+				break
+			} else if a[1].Type == obj.TYPE_CONST {
+                                prog.From = a[0]
+				prog.Reg = p.getRegister(prog, op, &a[2])
+				prog.From3 = newAddr(a[1])
+				prog.To = a[3]
+				break
+			} else {
+				p.errorf("invalid addressing modes for %s instruction", op)
+				return
+			}
 		}
 		if p.arch.Family == sys.S390X {
 			prog.From = a[1]
