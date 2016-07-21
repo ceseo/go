@@ -613,6 +613,9 @@ func aclass(ctxt *obj.Link, a *obj.Addr) int {
 		if REG_V0 <= a.Reg && a.Reg <= REG_V31 {
 			return C_VREG
 		}
+		if REG_VS0 <= a.Reg && a.Reg <= REG_VS63 {
+			return C_VSREG
+		}
 		if REG_CR0 <= a.Reg && a.Reg <= REG_CR7 || a.Reg == REG_CR {
 			return C_CREG
 		}
@@ -825,6 +828,8 @@ func oplook(ctxt *obj.Link, p *obj.Prog) *Optab {
 		      a2 = C_REG
 	      } else if REG_V0 <= p.Reg && p.Reg <= REG_V31 {
 		      a2 = C_VREG
+	      } else if REG_VS0 <= p.Reg && p.Reg <= REG_VS63 {
+		      a2 = C_VSREG
 	      } else if REG_F0 <= p.Reg && p.Reg <= REG_F31 {
 		      a2 = C_FREG
 	      }
