@@ -394,6 +394,9 @@ var optab = []Optab{
 	/* Vector SHA */
 	{AVSHASIGMA, C_ANDCON, C_VREG, C_ANDCON, C_VREG, 82, 4, 0}, /* vector SHA sigma, vx-form */
 
+	/* VSX vector load */
+	{ALXV, C_SOREG, C_NONE, C_NONE, C_VREG, 45, 4, 0}, /* vsx vector load, x-form */
+
 	/* 64-bit special registers */
 	{AMOVD, C_REG, C_NONE, C_NONE, C_SPR, 66, 4, 0},
 	{AMOVD, C_REG, C_NONE, C_NONE, C_LR, 66, 4, 0},
@@ -1265,6 +1268,17 @@ func buildop(ctxt *obj.Link) {
 		case AVSHASIGMA: /* vshasigmaw, vshasigmad */
 			opset (AVSHASIGMAW, r0)
 			opset (AVSHASIGMAD, r0)
+
+		case ALXV: /* lxvb16x, lxvd2x, lxvl, lxvll, lxvx, lxvdsx, lxvh8x, lxvw4x, lxvwsx */
+			opset (ALXVB16X, r0)
+			opset (ALXVD2X, r0)
+			opset (ALXVL, r0)
+			opset (ALXVLL, r0)
+			opset (ALXVX, r0)
+			opset (ALXVDSX, r0)
+			opset (ALXVH8X, r0)
+			opset (ALXVW4X, r0)
+			opset (ALXVWSX, r0)
 
 		case AAND: /* logical op Rb,Rs,Ra; no literal */
 			opset(AANDN, r0)
@@ -3824,6 +3838,25 @@ func oploadx(ctxt *obj.Link, a obj.As) uint32 {
 		return OPVCC(31, 6, 0, 0) /* lvsl */
 	case ALVSR:
 		return OPVCC(31, 38, 0, 0) /* lvsr */
+
+	case ALXVB16X:
+		return OPVCC(31, 876, 0, 0) /* lxvb16x */
+	case ALXVD2X:
+		return OPVCC(31, 844, 0, 0) /* lxvd2x */
+	case ALXVL:
+		return OPVCC(31, 269, 0, 0) /* lxvl */
+	case ALXVLL:
+		return OPVCC(31, 301, 0, 0) /* lxvll */
+	case ALXVX:
+		return OPVCC(31, 268, 0, 0) /* lxvx */
+	case ALXVDSX:
+		return OPVCC(31, 332, 0, 0) /* lxvdsx */
+	case ALXVH8X:
+		return OPVCC(31, 812, 0, 0) /* lxvh8x */
+	case ALXVW4X:
+		return OPVCC(31, 780, 0, 0) /* lxvw4x */
+	case ALXVWSX:
+		return OPVCC(31, 364, 0, 0) /* lxvwsx */
 	}
 
 	ctxt.Diag("bad loadx opcode %v", obj.Aconv(a))
