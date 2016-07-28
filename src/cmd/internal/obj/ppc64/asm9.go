@@ -395,7 +395,7 @@ var optab = []Optab{
 	{AVSHASIGMA, C_ANDCON, C_VREG, C_ANDCON, C_VREG, 82, 4, 0}, /* vector SHA sigma, vx-form */
 
 	/* VSX vector load */
-	{ALXV, C_SOREG, C_NONE, C_NONE, C_VREG, 45, 4, 0}, /* vsx vector load, x-form */
+	{ALXV, C_SOREG, C_NONE, C_NONE, C_VSREG, 45, 4, 0}, /* vsx vector load, x-form */
 
 	/* 64-bit special registers */
 	{AMOVD, C_REG, C_NONE, C_NONE, C_SPR, 66, 4, 0},

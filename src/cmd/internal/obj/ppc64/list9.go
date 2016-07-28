@@ -57,7 +57,7 @@ func Rconv(r int) string {
 		return fmt.Sprintf("V%d", r-REG_V0)
 	}
 	if REG_VS0 <= r && r <= REG_VS63 {
-		return fmt.Sprintf("V%d", r-REG_V0)
+		return fmt.Sprintf("VS%d", r-REG_VS0)
 	}
 	if REG_CR0 <= r && r <= REG_CR7 {
 		return fmt.Sprintf("CR%d", r-REG_CR0)
