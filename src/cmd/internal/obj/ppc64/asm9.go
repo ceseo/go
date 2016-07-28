@@ -3848,7 +3848,7 @@ func oploadx(ctxt *obj.Link, a obj.As) uint32 {
 	case ALXVLL:
 		return OPVCC(31, 301, 0, 0) /* lxvll */
 	case ALXVX:
-		return OPVCC(31, 268, 0, 0) /* lxvx */
+		return OPVCC(31, 268, 0, 0) | 1<<6 /* lxvx */
 	case ALXVDSX:
 		return OPVCC(31, 332, 0, 0) /* lxvdsx */
 	case ALXVH8X:
