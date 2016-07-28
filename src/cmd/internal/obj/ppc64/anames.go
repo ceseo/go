@@ -441,7 +441,7 @@ var Anames = []string{
 	"VSHASIGMA",
 	"VSHASIGMAW",
 	"VSHASIGMAD",
-	"LVX",
+	"LXV",
 	"LXVB16X",
 	"LXVD2X",
 	"LXVL",
