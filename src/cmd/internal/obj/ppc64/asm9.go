@@ -401,7 +401,7 @@ var optab = []Optab{
 	{AVSHASIGMA, C_ANDCON, C_VREG, C_ANDCON, C_VREG, 82, 4, 0}, /* vector SHA sigma, vx-form */
 
 	/* VSX vector load */
-	{ALXV, C_SOREG, C_NONE, C_NONE, C_VSREG, 45, 4, 0}, /* vsx vector load, x-form */
+	{ALXV, C_SOREG, C_NONE, C_NONE, C_VSREG, 85, 4, 0}, /* vsx vector load, x-form */
 
 	/* 64-bit special registers */
 	{AMOVD, C_REG, C_NONE, C_NONE, C_SPR, 66, 4, 0},
@@ -1603,6 +1603,11 @@ func AOP_IRRR(op uint32, d uint32, a uint32, b uint32, simm uint32) uint32 {
 /* VX-form 1-register + SIM operands */
 func AOP_IR(op uint32, d uint32, simm uint32) uint32 {
 	return op | (d&31)<<21 | (simm&31)<<16
+}
+
+/* XX1-form 3-register operands*/
+func AOP_XX1(op uint32, d uint32, a uint32, b uint32) uint32 {
+	return op | (d&31)<<21 | (a&31)<<16 | (b&31)<<11 | ((d>>5)&1)
 }
 
 func LOP_RRR(op uint32, a uint32, s uint32, b uint32) uint32 {
@@ -2828,6 +2833,13 @@ func asmout(ctxt *obj.Link, p *obj.Prog, o *Optab, out []uint32) {
 			shb := int (regoff(ctxt, &p.From))
 			o1 = AOP_IRRR(opirrr(ctxt, p.As), uint32(p.To.Reg), uint32(p.From3.Reg), uint32(p.Reg), uint32(shb))
 		}
+
+	case 84: /* indexed store */
+		o1 = AOP_XX1(opstorex(ctxt, p.As), uint32(p.From.Reg), uint32(p.To.Index), uint32(p.To.Reg))
+
+	case 85: /* indexed load */
+		o1 = AOP_XX1(oploadx(ctxt, p.As), uint32(p.To.Reg), uint32(p.From.Index), uint32(p.From.Reg))
+
 	}
 
 	out[0] = o1
