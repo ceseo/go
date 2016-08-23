@@ -159,9 +159,22 @@ TEXT runtime·mincore(SB),NOSPLIT|NOFRAME,$0-28
 
 // func now() (sec int64, nsec int32)
 TEXT time·now(SB),NOSPLIT,$16
-	MOVD	$0, R3 // CLOCK_REALTIME
+	MOVD	runtime·__kernel_clock_gettime_sym(SB),R6
+	CMPD	R6,$0
+	BEQ	fallback
+	MOVD	$0, R3		// CLOCK_REALTIME
 	MOVD	$0(R1), R4
-	SYSCALL	$SYS_clock_gettime
+	BL	runtime·__kernel_clock_gettime_sym(SB)
+	MOVD	0(R1), R3	// sec
+	MOVD	8(R1), R5	// nsec
+	MOVD	R3, sec+0(FP)
+	MOVW	R5, nsec+8(FP)
+	RET
+
+fallback:
+	MOVD	$0, R3		// CLOCK_REALTIME
+	MOVD	$0(R1), R4
+	SYSCALL $SYS_clock_gettime
 	MOVD	0(R1), R3	// sec
 	MOVD	8(R1), R5	// nsec
 	MOVD	R3, sec+0(FP)
@@ -169,9 +182,26 @@ TEXT time·now(SB),NOSPLIT,$16
 	RET
 
 TEXT runtime·nanotime(SB),NOSPLIT,$16
+	MOVD	runtime·__kernel_clock_gettime_sym(SB),R6
+	CMPD	R6,$0
+	BEQ	fallback
 	MOVW	$1, R3 // CLOCK_MONOTONIC
 	MOVD	$0(R1), R4
-	SYSCALL	$SYS_clock_gettime
+	BL	runtime·__kernel_clock_gettime_sym(SB)
+	MOVD	0(R1), R3	// sec
+	MOVD	8(R1), R5	// nsec
+	// sec is in R3, nsec in R5
+	// return nsec in R3
+	MOVD	$1000000000, R4
+	MULLD	R4, R3
+	ADD	R5, R3
+	MOVD	R3, ret+0(FP)
+	RET
+
+fallback:
+	MOVW	$1, R3 // CLOCK_MONOTONIC
+	MOVD	$0(R1), R4
+	SYSCALL $SYS_clock_gettime
 	MOVD	0(R1), R3	// sec
 	MOVD	8(R1), R5	// nsec
 	// sec is in R3, nsec in R5
