@@ -566,6 +566,9 @@ label1:
 //		outcode(int($1), &$2, int($6.Reg), &$4);
 //	}
 	CMP	R1, $4, CR0 // CMP R1, CR0, $4
+//	CMPB  RS,RB,RA
+//	cmpb  RA,RS,RB
+	CMPB	R2,R3,R1
 
 //
 // rotate and mask
@@ -672,6 +675,17 @@ label1:
 //	}
 	DCBF	(R1)
 	DCBF	(R1+R2) // DCBF	(R1)(R2*1)
+
+//	Population count, X-form
+	POPCNTD	R1,R2
+	POPCNTW	R1,R2
+	POPCNTB R1,R2
+
+//	Count leading zeros, X-form
+	CNTLZD	  R1,R2
+	CNTLZDCC  R1,R2
+	CNTLZW	  R1,R2
+	CNTLZWCC  R1,R2
 
 //	VMX instructions
 

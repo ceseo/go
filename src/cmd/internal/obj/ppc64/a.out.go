@@ -626,6 +626,8 @@ const (
 	ACNTLZDCC
 	ACMPW /* CMP with L=0 */
 	ACMPWU
+	ACMPX
+	ACMPB
 	ADIVD
 	ADIVDCC
 	ADIVDE
@@ -704,6 +706,10 @@ const (
 
 	/* more 64-bit operations */
 	AHRFID
+	APOPCNT
+	APOPCNTD
+	APOPCNTW
+	APOPCNTB
 
 	/* Vector */
 	ALV

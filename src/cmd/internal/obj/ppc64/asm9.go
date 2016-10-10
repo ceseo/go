@@ -345,6 +345,7 @@ var optab = []Optab{
 	{AMOVD, C_MSR, C_NONE, C_NONE, C_REG, 54, 4, 0},  /* mfmsr */
 	{AMOVD, C_REG, C_NONE, C_NONE, C_MSR, 54, 4, 0},  /* mtmsrd */
 	{AMOVWZ, C_REG, C_NONE, C_NONE, C_MSR, 54, 4, 0}, /* mtmsr */
+	{APOPCNT, C_REG, C_NONE, C_NONE, C_REG, 93, 4, 0}, /* population count, x-form */
 
 	/* Vector instructions */
 
@@ -506,6 +507,7 @@ var optab = []Optab{
 	{ACMPU, C_REG, C_REG, C_NONE, C_REG, 70, 4, 0},
 	{ACMPU, C_REG, C_NONE, C_NONE, C_ANDCON, 71, 4, 0},
 	{ACMPU, C_REG, C_REG, C_NONE, C_ANDCON, 71, 4, 0},
+	{ACMPX, C_REG, C_REG, C_NONE, C_REG, 92, 4, 0},
 	{AFCMPO, C_FREG, C_NONE, C_NONE, C_FREG, 70, 4, 0},
 	{AFCMPO, C_FREG, C_REG, C_NONE, C_FREG, 70, 4, 0},
 	{ATW, C_LCON, C_REG, C_NONE, C_REG, 60, 4, 0},
@@ -1161,6 +1163,11 @@ func buildop(ctxt *obj.Link) {
 			opset(ADIVDUVCC, r0)
 			opset(ADIVDUCC, r0)
 
+		case APOPCNT: /* popcntd, popcntw, popcntb */
+			opset(APOPCNTD, r0)
+			opset(APOPCNTW, r0)
+			opset(APOPCNTB, r0)
+
 		case AMOVBZ: /* lbz, stz, rlwm(r/r), lhz, lha, stz, and x variants */
 			opset(AMOVH, r0)
 
@@ -1707,6 +1714,9 @@ func buildop(ctxt *obj.Link) {
 		case ACMP:
 			opset(ACMPW, r0)
 
+		case ACMPX:
+			opset(ACMPB, r0)
+
 		case ACMPU:
 			opset(ACMPWU, r0)
 
@@ -1783,7 +1793,7 @@ func AOP_RRR(op uint32, d uint32, a uint32, b uint32) uint32 {
 	return op | (d&31)<<21 | (a&31)<<16 | (b&31)<<11
 }
 
-/* VX-form 2-register operands, r/r/none */
+/* VX-form 2-register operands, r/none/r */
 func AOP_RR(op uint32, d uint32, a uint32) uint32 {
 	return op | (d&31)<<21 | (a&31)<<11
 }
@@ -2670,6 +2680,9 @@ func asmout(ctxt *obj.Link, p *obj.Prog, o *Optab, out []uint32) {
 		case ARLDIMI, ARLDIMICC:
 			o1 = AOP_RRR(opirr(ctxt, p.As), uint32(p.Reg), uint32(p.To.Reg), (uint32(v) & 0x1F))
 			o1 |= (uint32(d) & 31) << 6
+			if d&0x20 != 0 {
+				o1 |= 1 << 5
+			}
 			if v&0x20 != 0 {
 				o1 |= 1 << 1
 			}
@@ -3199,6 +3212,14 @@ func asmout(ctxt *obj.Link, p *obj.Prog, o *Optab, out []uint32) {
 		/* 3-register operand order: XA, XB, XC, XT */
 		o1 = AOP_XX4(oprrr(ctxt, p.As), uint32(p.To.Reg), uint32(p.From.Reg), uint32(p.Reg), uint32(p.From3.Reg))
 
+	case 92: /* cmp* r,r,r, X-form */
+		/* operand order: RS, RB, RA */
+		o1 = AOP_RRR(oprrr(ctxt, p.As), uint32(p.From.Reg), uint32(p.To.Reg), uint32(p.Reg))
+
+	case 93: /* popcnt* r,r, X-form */
+		/* operand order: RS, RA */
+		o1 = AOP_RRR(oprrr(ctxt, p.As), uint32(p.From.Reg), uint32(p.To.Reg), uint32(p.Reg))
+
 	}
 
 	out[0] = o1
@@ -3281,6 +3302,8 @@ func oprrr(ctxt *obj.Link, a obj.As) uint32 {
 		return OPVCC(31, 0, 0, 0) /* L=0 */
 	case ACMPWU:
 		return OPVCC(31, 32, 0, 0)
+	case ACMPB:
+		return OPVCC(31, 508, 0, 0) /* cmpb - v2.05 */
 
 	case ACNTLZW:
 		return OPVCC(31, 26, 0, 0)
@@ -3620,6 +3643,13 @@ func oprrr(ctxt *obj.Link, a obj.As) uint32 {
 		return OPVCC(31, 412, 0, 0)
 	case AORNCC:
 		return OPVCC(31, 412, 0, 1)
+
+	case APOPCNTD:
+		return OPVCC(31, 506, 0, 0) /* popcntd - v2.06 */
+	case APOPCNTW:
+		return OPVCC(31, 378, 0, 0) /* popcntw - v2.06 */
+	case APOPCNTB:
+		return OPVCC(31, 122, 0, 0) /* popcntb - v2.02 */
 
 	case ARFI:
 		return OPVCC(19, 50, 0, 0)
